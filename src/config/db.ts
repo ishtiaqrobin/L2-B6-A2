@@ -14,7 +14,7 @@ const initDB = async () => {
             email VARCHAR(150) UNIQUE NOT NULL,
             password TEXT NOT NULL,
             phone VARCHAR(15) NOT NULL,
-            role VARCHAR(50) DEFAULT 'customer'
+            role VARCHAR(50) DEFAULT 'customer' CHECK (role IN ('customer', 'admin'))
         )
         `);
 
@@ -25,7 +25,7 @@ const initDB = async () => {
             type VARCHAR(50) CHECK (type IN ('car', 'bike', 'van', 'SUV')),
             registration_number VARCHAR(50) UNIQUE NOT NULL,
             daily_rent_price INT NOT NULL CHECK (daily_rent_price > 0),
-            availability_status VARCHAR(50) DEFAULT 'available'
+            availability_status VARCHAR(50) DEFAULT 'available' CHECK (availability_status IN ('available', 'booked'))
         )
         `);
 

@@ -104,9 +104,7 @@ const deleteVehicle = async (id: string) => {
   );
 
   if (bookingCheck.rows.length > 0) {
-    throw new Error(
-      "Cannot delete vehicle with active bookings. Please complete or cancel all active bookings first."
-    );
+    throw new Error("Cannot delete vehicle with active bookings.");
   }
 
   const result = await pool.query(

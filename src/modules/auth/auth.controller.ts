@@ -18,15 +18,6 @@ const createUser = async (req: Request, res: Response) => {
     });
   }
 
-  // Validate role before hitting database
-  if (role !== "admin" && role !== "customer") {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid role",
-      errors: "Please provide a valid role",
-    });
-  }
-
   try {
     const result = await authServices.createUser(req.body);
 
