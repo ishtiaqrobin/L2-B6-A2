@@ -113,13 +113,17 @@ A robust RESTful API for a vehicle rental service built with Node.js, Express, T
 
    1. Ensure PostgreSQL is installed and running on your machine
    2. Create a new database:
+
       ```sql
       CREATE DATABASE banglaride;
       ```
+
    3. Update your `.env` file:
+
       ```env
       CONNECTION_STRING=postgresql://localhost:5432/banglaride
       ```
+
    4. The application will automatically initialize the required tables on startup
 
    **Option C: Other Cloud Providers**
