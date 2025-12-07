@@ -176,10 +176,19 @@ const deleteVehicle = async (req: Request, res: Response) => {
       data: null,
     });
   } catch (error: any) {
+    // Active booking error handling
+    if (error.message.includes("Cannot delete vehicle with active bookings")) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete vehicle",
+        errors: error.message,
+      });
+    }
+
     res.status(500).json({
       success: false,
-      message: "Internal Server Error " + error.message,
-      errors: error,
+      message: "Internal Server Error: " + error.message,
+      errors: error.message,
     });
   }
 };

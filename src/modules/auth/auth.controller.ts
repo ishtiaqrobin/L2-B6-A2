@@ -32,7 +32,7 @@ const createUser = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: "Internal Server Error" + error.message,
-      errors: error,
+      errors: error.message,
     });
   }
 };
@@ -55,6 +55,7 @@ const loginUser = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: "Internal Server Error" + error.message,
+      errors: error.message,
     });
   }
 };
