@@ -45,12 +45,12 @@ const getVehicle = async (id: string) => {
 };
 
 const updateVehicle = async (payload: Record<string, unknown>, id: string) => {
-  // Dynamic UPDATE query তৈরি করা হচ্ছে
+  // Dynamic UPDATE query
   const fields: string[] = [];
   const values: any[] = [];
   let paramCount = 1;
 
-  // শুধু যে fields পাঠানো হয়েছে সেগুলো নিয়ে query তৈরি করা
+  // fields update
   if (payload.vehicle_name !== undefined) {
     fields.push(`vehicle_name = $${paramCount++}`);
     values.push(payload.vehicle_name);
@@ -76,12 +76,11 @@ const updateVehicle = async (payload: Record<string, unknown>, id: string) => {
     values.push(payload.availability_status);
   }
 
-  // যদি কোনো field update করার জন্য না পাঠানো হয়
   if (fields.length === 0) {
     throw new Error("No fields to update");
   }
 
-  // id শেষে add করা
+  // id add
   values.push(id);
 
   const query = `
@@ -97,7 +96,7 @@ const updateVehicle = async (payload: Record<string, unknown>, id: string) => {
 };
 
 const deleteVehicle = async (id: string) => {
-  // Active booking check করা
+  // Active booking check
   const bookingCheck = await pool.query(
     `SELECT id FROM bookings WHERE vehicle_id = $1 AND status = 'active'`,
     [id]

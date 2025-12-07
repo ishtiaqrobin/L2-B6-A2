@@ -15,19 +15,19 @@ const updateUser = async (
   requestUserId?: number,
   requestUserRole?: string
 ) => {
-  // Dynamic UPDATE query তৈরি করা
+  // Dynamic UPDATE query
   const fields: string[] = [];
   const values: any[] = [];
   let paramCount = 1;
 
-  // শুধু যে fields পাঠানো হয়েছে সেগুলো নিয়ে query তৈরি করা
+  // fields update
   if (payload.name !== undefined) {
     fields.push(`name = $${paramCount++}`);
     values.push(payload.name);
   }
 
   if (payload.email !== undefined) {
-    // Email lowercase enforcement
+    // Email lowercase
     const email = (payload.email as string).toLowerCase();
     fields.push(`email = $${paramCount++}`);
     values.push(email);
@@ -38,7 +38,7 @@ const updateUser = async (
     values.push(payload.phone);
   }
 
-  // Role update শুধু admin করতে পারবে
+  // Admin can update user role
   if (payload.role !== undefined) {
     if (requestUserRole !== "admin") {
       throw new Error("Only admin can update user role");
@@ -47,12 +47,11 @@ const updateUser = async (
     values.push(payload.role);
   }
 
-  // যদি কোনো field update করার জন্য না পাঠানো হয়
   if (fields.length === 0) {
     throw new Error("No fields to update");
   }
 
-  // id শেষে add করা
+  // id add
   values.push(id);
 
   const query = `
@@ -68,7 +67,7 @@ const updateUser = async (
 };
 
 const deleteUser = async (id: string) => {
-  // Active booking check করা
+  // Active booking check
   const bookingCheck = await pool.query(
     `SELECT id FROM bookings WHERE customer_id = $1 AND status = 'active'`,
     [id]

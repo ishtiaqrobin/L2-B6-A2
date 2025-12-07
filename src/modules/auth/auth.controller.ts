@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 import { authServices } from "./auth.service";
 
 const createUser = async (req: Request, res: Response) => {
-  const { role, email, password } = req.body;
+  const { email, password } = req.body;
 
-  // Email lowercase enforcement
+  // Email lowercase
   if (email) {
     req.body.email = email.toLowerCase();
   }
@@ -39,7 +39,7 @@ const loginUser = async (req: Request, res: Response) => {
   try {
     let { email, password } = req.body;
 
-    // Email lowercase enforcement
+    // Email lowercase
     if (email) {
       email = email.toLowerCase();
     }

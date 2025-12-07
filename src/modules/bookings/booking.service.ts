@@ -1,9 +1,18 @@
 import { pool } from "../../config/db";
 
+// Helper function to format date as YYYY-MM-DD
+const formatDate = (date: Date | string): string => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const createBooking = async (payload: Record<string, unknown>) => {
   const { customer_id, vehicle_id, rent_start_date, rent_end_date } = payload;
 
-  // Step 1: Vehicle এর daily_rent_price fetch করা এবং availability check করা
+  // Step 1: Vehicle check and availability check
   const vehicleResult = await pool.query(
     `SELECT id, vehicle_name, daily_rent_price, availability_status FROM vehicles WHERE id = $1`,
     [vehicle_id]
@@ -19,7 +28,7 @@ const createBooking = async (payload: Record<string, unknown>) => {
     throw new Error("Vehicle is not available for booking");
   }
 
-  // Step 2: Total price calculate করা
+  // Step 2: Total price calculate
   const startDate = new Date(rent_start_date as string);
   const endDate = new Date(rent_end_date as string);
   const daysDifference = Math.ceil(
@@ -27,12 +36,12 @@ const createBooking = async (payload: Record<string, unknown>) => {
   );
   const total_price = daysDifference * vehicle.daily_rent_price;
 
-  // Step 3: Booking create করা এবং vehicle status update করা (transaction)
+  // Step 3: Booking create and vehicle status update
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
 
-    // Booking insert করা
+    // Booking insert
     const bookingResult = await client.query(
       `
       INSERT INTO bookings (customer_id, vehicle_id, rent_start_date, rent_end_date, total_price, status) 
@@ -49,7 +58,7 @@ const createBooking = async (payload: Record<string, unknown>) => {
       ]
     );
 
-    // Vehicle status update করা
+    // Vehicle status update
     await client.query(
       `UPDATE vehicles SET availability_status = $1 WHERE id = $2`,
       ["booked", vehicle_id]
@@ -57,10 +66,12 @@ const createBooking = async (payload: Record<string, unknown>) => {
 
     await client.query("COMMIT");
 
-    // Step 4: Vehicle details সহ response return করা
+    // Step 4: Vehicle details with booking response return
     const booking = bookingResult.rows[0];
     return {
       ...booking,
+      rent_start_date: formatDate(booking.rent_start_date),
+      rent_end_date: formatDate(booking.rent_end_date),
       vehicle: {
         vehicle_name: vehicle.vehicle_name,
         daily_rent_price: vehicle.daily_rent_price,
@@ -75,7 +86,7 @@ const createBooking = async (payload: Record<string, unknown>) => {
 };
 
 const getBookings = async (userId: number, userRole: string) => {
-  // Step 1: Auto-mark as returned - যেসব booking এর period শেষ হয়েছে
+  // Step 1: Auto-mark as returned - booking period over
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -83,7 +94,7 @@ const getBookings = async (userId: number, userRole: string) => {
   try {
     await client.query("BEGIN");
 
-    // Active bookings যেগুলোর end_date পার হয়ে গেছে সেগুলো returned mark করা
+    // Active bookings (end_date over) returned mark
     const expiredBookings = await client.query(
       `
       SELECT id, vehicle_id 
@@ -94,9 +105,9 @@ const getBookings = async (userId: number, userRole: string) => {
       [today]
     );
 
-    // যদি expired bookings থাকে, তাহলে update করা
+    // if expired bookings found, status update
     if (expiredBookings.rows.length > 0) {
-      // Bookings status returned করা
+      // Bookings status returned
       await client.query(
         `
         UPDATE bookings 
@@ -107,7 +118,7 @@ const getBookings = async (userId: number, userRole: string) => {
         [today]
       );
 
-      // Corresponding vehicles এর status available করা
+      // Corresponding vehicles is status available
       const vehicleIds = expiredBookings.rows.map((row) => row.vehicle_id);
       await client.query(
         `
@@ -127,12 +138,12 @@ const getBookings = async (userId: number, userRole: string) => {
     client.release();
   }
 
-  // Step 2: Role-based bookings fetch করা
+  // Step 2: Role-based bookings fetch
   let query = "";
   let params: any[] = [];
 
   if (userRole === "admin") {
-    // Admin সব bookings দেখবে customer এবং vehicle details সহ
+    // Admin all bookings show with customer details
     query = `
       SELECT 
         b.id, 
@@ -152,7 +163,7 @@ const getBookings = async (userId: number, userRole: string) => {
       ORDER BY b.id DESC
     `;
   } else {
-    // Customer শুধু নিজের bookings দেখবে vehicle details সহ
+    // Customer show only bookings with vehicle details
     query = `
       SELECT 
         b.id, 
@@ -174,14 +185,14 @@ const getBookings = async (userId: number, userRole: string) => {
 
   const result = await pool.query(query, params);
 
-  // Response format করা
+  // Response format
   if (userRole === "admin") {
     return result.rows.map((row) => ({
       id: row.id,
       customer_id: row.customer_id,
       vehicle_id: row.vehicle_id,
-      rent_start_date: row.rent_start_date,
-      rent_end_date: row.rent_end_date,
+      rent_start_date: formatDate(row.rent_start_date),
+      rent_end_date: formatDate(row.rent_end_date),
       total_price: row.total_price,
       status: row.status,
       customer: {
@@ -197,8 +208,8 @@ const getBookings = async (userId: number, userRole: string) => {
     return result.rows.map((row) => ({
       id: row.id,
       vehicle_id: row.vehicle_id,
-      rent_start_date: row.rent_start_date,
-      rent_end_date: row.rent_end_date,
+      rent_start_date: formatDate(row.rent_start_date),
+      rent_end_date: formatDate(row.rent_end_date),
       total_price: row.total_price,
       status: row.status,
       vehicle: {
@@ -220,7 +231,7 @@ const updateBooking = async (
   try {
     await client.query("BEGIN");
 
-    // Booking fetch করা
+    // Booking fetch
     const bookingResult = await client.query(
       `SELECT * FROM bookings WHERE id = $1`,
       [bookingId]
@@ -232,15 +243,15 @@ const updateBooking = async (
 
     const booking = bookingResult.rows[0];
 
-    // Customer হলে ownership check করা
+    // Customer ownership check
     if (userRole === "customer" && booking.customer_id !== userId) {
       throw new Error("You are not authorized to update this booking");
     }
 
-    // Customer cancel করার আগে date check করা (before start date only)
+    // Customer cancel status date check (before start date only)
     if (userRole === "customer" && status === "cancelled") {
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Time part remove করা
+      today.setHours(0, 0, 0, 0);
 
       const startDate = new Date(booking.rent_start_date);
       startDate.setHours(0, 0, 0, 0);
@@ -252,13 +263,13 @@ const updateBooking = async (
       }
     }
 
-    // Status update করা
+    // Status update
     const updateResult = await client.query(
       `UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *`,
       [status, bookingId]
     );
 
-    // যদি status 'returned' হয়, তাহলে vehicle status 'available' করা
+    // If status 'returned', then vehicle status 'available'
     if (status === "returned") {
       await client.query(
         `UPDATE vehicles SET availability_status = $1 WHERE id = $2`,
@@ -268,7 +279,7 @@ const updateBooking = async (
 
     await client.query("COMMIT");
 
-    // Vehicle details fetch করা (যদি returned হয়)
+    // Vehicle details fetch (if returned)
     if (status === "returned") {
       const vehicleResult = await pool.query(
         `SELECT availability_status FROM vehicles WHERE id = $1`,

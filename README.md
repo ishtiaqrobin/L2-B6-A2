@@ -104,9 +104,11 @@ A robust RESTful API for a vehicle rental service built with Node.js, Express, T
    2. Create a new project
    3. Copy the connection string from your Neon dashboard
    4. Update your `.env` file with the connection string:
+
       ```env
       CONNECTION_STRING=postgresql://username:password@host/database?sslmode=require
       ```
+
    5. The application will automatically initialize the required tables on startup
 
    **Option B: Local PostgreSQL**
@@ -242,9 +244,3 @@ Developed as part of Level 2 - Batch 6 - Mission 3 Assignment
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
-
----
-
-## 📞 Support
-
-For support or questions, please contact the development team or open an issue in the repository.

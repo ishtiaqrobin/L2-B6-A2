@@ -4,7 +4,6 @@ import { userServices } from "./user.service";
 const getUsers = async (req: Request, res: Response) => {
   try {
     const result = await userServices.getUsers();
-    console.log("Result rows data: ", result.rows);
 
     res.status(200).json({
       success: true,
@@ -35,7 +34,7 @@ const updateUser = async (req: Request, res: Response) => {
       });
     }
 
-    // Authorization check: Customer শুধু নিজের profile update করতে পারবে
+    // Authorization check: Customer update this profile
     if (
       userRole === "customer" &&
       userId !== parseInt(targetUserId as string)
@@ -47,7 +46,7 @@ const updateUser = async (req: Request, res: Response) => {
       });
     }
 
-    // Role validation: Customer role change করতে পারবে না
+    // Role validation: Customer role change is not allowed
     if (userRole === "customer" && req.body.role !== undefined) {
       return res.status(403).json({
         success: false,
@@ -76,7 +75,6 @@ const updateUser = async (req: Request, res: Response) => {
       data: result.rows[0],
     });
   } catch (error: any) {
-    // Specific error handling
     if (error.message === "Only admin can update user role") {
       return res.status(403).json({
         success: false,
@@ -119,7 +117,6 @@ const deleteUser = async (req: Request, res: Response) => {
       data: null,
     });
   } catch (error: any) {
-    // Active booking error handling
     if (error.message.includes("Cannot delete user with active bookings")) {
       return res.status(400).json({
         success: false,

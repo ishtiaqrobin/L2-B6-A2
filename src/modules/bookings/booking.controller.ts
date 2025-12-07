@@ -33,7 +33,6 @@ const createBooking = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    // Specific error handling
     if (error.message === "Vehicle not found") {
       return res.status(404).json({
         success: false,
@@ -165,7 +164,6 @@ const updateBooking = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error: any) {
-    // Specific error handling
     if (error.message === "Booking not found") {
       return res.status(404).json({
         success: false,

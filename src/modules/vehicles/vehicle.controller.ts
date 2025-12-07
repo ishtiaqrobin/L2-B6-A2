@@ -36,8 +36,6 @@ const createVehicle = async (req: Request, res: Response) => {
       message: "Vehicle created successfully",
       data: result.rows[0],
     });
-
-    console.log(result.rows[0]);
   } catch (error: any) {
     res.status(500).json({
       success: false,
@@ -104,7 +102,7 @@ const getVehicle = async (req: Request, res: Response) => {
 const updateVehicle = async (req: Request, res: Response) => {
   const { daily_rent_price } = req.body;
 
-  // daily_rent_price optional কিন্তু যদি পাঠানো হয় তাহলে validate করতে হবে
+  // daily_rent_price optional but validate if provided
   if (daily_rent_price !== undefined && daily_rent_price !== null) {
     if (
       typeof daily_rent_price !== "number" ||
@@ -145,8 +143,6 @@ const updateVehicle = async (req: Request, res: Response) => {
       message: "Vehicle updated successfully",
       data: result.rows[0],
     });
-
-    console.log(result.rows[0]);
   } catch (error: any) {
     res.status(500).json({
       success: false,
@@ -176,7 +172,6 @@ const deleteVehicle = async (req: Request, res: Response) => {
       data: null,
     });
   } catch (error: any) {
-    // Active booking error handling
     if (error.message.includes("Cannot delete vehicle with active bookings")) {
       return res.status(400).json({
         success: false,

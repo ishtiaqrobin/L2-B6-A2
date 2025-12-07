@@ -26,7 +26,6 @@ const loginUser = async (email: string, password: string) => {
     [email]
   );
 
-  console.log(result.rows);
   if (result.rows.length === 0) {
     return null;
   } else {
@@ -49,8 +48,6 @@ const loginUser = async (email: string, password: string) => {
         expiresIn: "7d",
       }
     );
-
-    console.log({ token });
 
     return {
       token,
