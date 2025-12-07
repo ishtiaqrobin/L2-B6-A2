@@ -3,10 +3,10 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import config from "../../config";
 
-const createUser = async (data: any) => {
-  const { name, email, password, phone, role } = data;
+const createUser = async (payload: Record<string, unknown>) => {
+  const { name, email, password, phone, role } = payload;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password as string, 10);
 
   const result = await pool.query(
     `
@@ -32,6 +32,7 @@ const loginUser = async (email: string, password: string) => {
     return null;
   } else {
     const user = result.rows[0];
+    const { id, name, email, phone, role } = user;
 
     const match = await bcrypt.compare(
       password as string,
@@ -54,7 +55,13 @@ const loginUser = async (email: string, password: string) => {
 
     return {
       token,
-      user,
+      user: {
+        id,
+        name,
+        email,
+        phone,
+        role,
+      },
     };
   }
 };
