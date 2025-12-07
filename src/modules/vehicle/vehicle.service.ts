@@ -111,8 +111,8 @@ const deleteVehicle = async (id: string) => {
 
   const result = await pool.query(
     `
-        DELETE FROM vehicles WHERE id = $1 RETURNING *
-        `,
+    DELETE FROM vehicles WHERE id = $1 RETURNING *
+    `,
     [id]
   );
 

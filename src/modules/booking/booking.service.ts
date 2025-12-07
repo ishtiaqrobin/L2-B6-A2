@@ -75,6 +75,59 @@ const createBooking = async (payload: Record<string, unknown>) => {
 };
 
 const getBookings = async (userId: number, userRole: string) => {
+  // Step 1: Auto-mark as returned - যেসব booking এর period শেষ হয়েছে
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // Active bookings যেগুলোর end_date পার হয়ে গেছে সেগুলো returned mark করা
+    const expiredBookings = await client.query(
+      `
+      SELECT id, vehicle_id 
+      FROM bookings 
+      WHERE rent_end_date < $1 
+      AND status = 'active'
+      `,
+      [today]
+    );
+
+    // যদি expired bookings থাকে, তাহলে update করা
+    if (expiredBookings.rows.length > 0) {
+      // Bookings status returned করা
+      await client.query(
+        `
+        UPDATE bookings 
+        SET status = 'returned' 
+        WHERE rent_end_date < $1 
+        AND status = 'active'
+        `,
+        [today]
+      );
+
+      // Corresponding vehicles এর status available করা
+      const vehicleIds = expiredBookings.rows.map((row) => row.vehicle_id);
+      await client.query(
+        `
+        UPDATE vehicles 
+        SET availability_status = 'available' 
+        WHERE id = ANY($1::int[])
+        `,
+        [vehicleIds]
+      );
+    }
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+
+  // Step 2: Role-based bookings fetch করা
   let query = "";
   let params: any[] = [];
 
@@ -182,6 +235,21 @@ const updateBooking = async (
     // Customer হলে ownership check করা
     if (userRole === "customer" && booking.customer_id !== userId) {
       throw new Error("You are not authorized to update this booking");
+    }
+
+    // Customer cancel করার আগে date check করা (before start date only)
+    if (userRole === "customer" && status === "cancelled") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Time part remove করা
+
+      const startDate = new Date(booking.rent_start_date);
+      startDate.setHours(0, 0, 0, 0);
+
+      if (today >= startDate) {
+        throw new Error(
+          "Cannot cancel booking. Cancellation is only allowed before the start date."
+        );
+      }
     }
 
     // Status update করা

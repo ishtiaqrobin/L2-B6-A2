@@ -182,6 +182,18 @@ const updateBooking = async (req: Request, res: Response) => {
       });
     }
 
+    if (
+      error.message.includes(
+        "Cannot cancel booking. Cancellation is only allowed before the start date"
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot cancel booking",
+        errors: error.message,
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: "Internal Server Error: " + error.message,
