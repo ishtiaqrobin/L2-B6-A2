@@ -1,9 +1,9 @@
 import express, { Request, Response } from "express";
 import initDB from "./config/db";
-import { userRoutes } from "./modules/user/user.routes";
+import { userRoutes } from "./modules/users/user.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
-import { vehicleRoutes } from "./modules/vehicle/vehicle.routes";
-import { bookingRoutes } from "./modules/booking/booking.routes";
+import { vehicleRoutes } from "./modules/vehicles/vehicle.routes";
+import { bookingRoutes } from "./modules/bookings/booking.routes";
 
 const app = express();
 

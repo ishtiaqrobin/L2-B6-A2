@@ -2,7 +2,21 @@ import { Request, Response } from "express";
 import { authServices } from "./auth.service";
 
 const createUser = async (req: Request, res: Response) => {
-  const { role } = req.body;
+  const { role, email, password } = req.body;
+
+  // Email lowercase enforcement
+  if (email) {
+    req.body.email = email.toLowerCase();
+  }
+
+  // Password validation: min 6 characters
+  if (!password || password.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid password",
+      errors: "Password must be at least 6 characters long",
+    });
+  }
 
   // Validate role before hitting database
   if (role !== "admin" && role !== "customer") {
@@ -15,18 +29,11 @@ const createUser = async (req: Request, res: Response) => {
 
   try {
     const result = await authServices.createUser(req.body);
-    const { id, name, email, phone, role } = result.rows[0];
 
     res.status(201).json({
       success: true,
       message: "User registered successfully",
-      data: {
-        id,
-        name,
-        email,
-        phone,
-        role,
-      },
+      data: result.rows[0],
     });
   } catch (error: any) {
     res.status(500).json({
@@ -39,7 +46,12 @@ const createUser = async (req: Request, res: Response) => {
 
 const loginUser = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+
+    // Email lowercase enforcement
+    if (email) {
+      email = email.toLowerCase();
+    }
 
     const result = await authServices.loginUser(
       email as string,
