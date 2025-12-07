@@ -5,8 +5,6 @@ import logger from "../../middleware/logger";
 
 const router = Router();
 
-router.post("/", userControllers.createUser);
-
 router.get("/", logger, auth("admin"), userControllers.getUsers);
 
 router.get("/:id", userControllers.getUser);

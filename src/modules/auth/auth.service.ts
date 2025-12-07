@@ -19,7 +19,6 @@ const createUser = async (payload: Record<string, unknown>) => {
 };
 
 const loginUser = async (email: string, password: string) => {
-  console.log({ email });
   const result = await pool.query(
     `
     SELECT * FROM users WHERE email = $1
@@ -27,7 +26,7 @@ const loginUser = async (email: string, password: string) => {
     [email]
   );
 
-  console.log(result);
+  console.log(result.rows);
   if (result.rows.length === 0) {
     return null;
   } else {

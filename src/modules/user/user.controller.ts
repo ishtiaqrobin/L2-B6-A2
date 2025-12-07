@@ -1,31 +1,14 @@
 import { Request, Response } from "express";
 import { userServices } from "./user.service";
 
-const createUser = async (req: Request, res: Response) => {
-  try {
-    const result = await userServices.createUser(req.body);
-
-    res.status(201).json({
-      success: true,
-      message: "Data inserted successfully",
-      data: result.rows[0],
-    });
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error " + error.message,
-    });
-    return;
-  }
-};
-
 const getUsers = async (req: Request, res: Response) => {
   try {
     const result = await userServices.getUsers();
+    console.log("Result rows data: ", result.rows);
 
     res.status(200).json({
       success: true,
-      message: "Data fetched successfully",
+      message: "Users retrieved successfully",
       data: result.rows,
     });
   } catch (error: any) {
@@ -118,7 +101,6 @@ const deleteUser = async (req: Request, res: Response) => {
 };
 
 export const userControllers = {
-  createUser,
   getUsers,
   getUser,
   updateUser,

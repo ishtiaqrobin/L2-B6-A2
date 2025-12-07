@@ -13,6 +13,7 @@ const auth = (...roles: string[]) => {
         return res.status(401).json({
           success: false,
           message: "Unauthorized",
+          errors: "Please provide a valid token",
         });
       }
 
@@ -23,6 +24,7 @@ const auth = (...roles: string[]) => {
         return res.status(401).json({
           success: false,
           message: "Unauthorized",
+          errors: "Please provide a valid token",
         });
       }
 
@@ -38,6 +40,7 @@ const auth = (...roles: string[]) => {
         return res.status(403).json({
           success: false,
           message: "Forbidden",
+          errors: "You are not authorized to perform this action",
         });
       }
 
