@@ -75,7 +75,7 @@ A robust RESTful API for a vehicle rental service built with Node.js, Express, T
 
    ```bash
    git clone <repository-url>
-   cd BanglaRide\ API
+   cd BanglaRide API
    ```
 
 2. **Install dependencies**
