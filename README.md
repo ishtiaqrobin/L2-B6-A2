@@ -96,13 +96,42 @@ A robust RESTful API for a vehicle rental service built with Node.js, Express, T
 
 4. **Set up the database**
 
-   Ensure PostgreSQL is running and create the database:
+   You have several options for setting up your PostgreSQL database:
 
-   ```sql
-   CREATE DATABASE banglaride;
-   ```
+   **Option A: Neon DB (Recommended for Cloud Deployment)**
 
-   The application will automatically initialize the required tables on startup.
+   1. Sign up for a free account at [Neon](https://neon.tech)
+   2. Create a new project
+   3. Copy the connection string from your Neon dashboard
+   4. Update your `.env` file with the connection string:
+      ```env
+      CONNECTION_STRING=postgresql://username:password@host/database?sslmode=require
+      ```
+   5. The application will automatically initialize the required tables on startup
+
+   **Option B: Local PostgreSQL**
+
+   1. Ensure PostgreSQL is installed and running on your machine
+   2. Create a new database:
+      ```sql
+      CREATE DATABASE banglaride;
+      ```
+   3. Update your `.env` file:
+      ```env
+      CONNECTION_STRING=postgresql://localhost:5432/banglaride
+      ```
+   4. The application will automatically initialize the required tables on startup
+
+   **Option C: Other Cloud Providers**
+
+   You can also use other PostgreSQL providers like:
+
+   - **Supabase** - [supabase.com](https://supabase.com)
+   - **Railway** - [railway.app](https://railway.app)
+   - **ElephantSQL** - [elephantsql.com](https://elephantsql.com)
+   - **AWS RDS** - [aws.amazon.com/rds](https://aws.amazon.com/rds)
+
+   Follow the provider's instructions to get your connection string and update the `.env` file accordingly.
 
 5. **Start the development server**
 
