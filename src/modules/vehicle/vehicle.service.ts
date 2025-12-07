@@ -45,27 +45,53 @@ const getVehicle = async (id: string) => {
 };
 
 const updateVehicle = async (payload: Record<string, unknown>, id: string) => {
-  const {
-    vehicle_name,
-    type,
-    registration_number,
-    daily_rent_price,
-    availability_status,
-  } = payload;
+  // Dynamic UPDATE query তৈরি করা হচ্ছে
+  const fields: string[] = [];
+  const values: any[] = [];
+  let paramCount = 1;
 
-  const result = await pool.query(
-    `
-        UPDATE vehicles SET vehicle_name = $1, type = $2, registration_number = $3, daily_rent_price = $4, availability_status = $5 WHERE id = $6 RETURNING *
-        `,
-    [
-      vehicle_name,
-      type,
-      registration_number,
-      daily_rent_price,
-      availability_status,
-      id,
-    ]
-  );
+  // শুধু যে fields পাঠানো হয়েছে সেগুলো নিয়ে query তৈরি করা
+  if (payload.vehicle_name !== undefined) {
+    fields.push(`vehicle_name = $${paramCount++}`);
+    values.push(payload.vehicle_name);
+  }
+
+  if (payload.type !== undefined) {
+    fields.push(`type = $${paramCount++}`);
+    values.push(payload.type);
+  }
+
+  if (payload.registration_number !== undefined) {
+    fields.push(`registration_number = $${paramCount++}`);
+    values.push(payload.registration_number);
+  }
+
+  if (payload.daily_rent_price !== undefined) {
+    fields.push(`daily_rent_price = $${paramCount++}`);
+    values.push(payload.daily_rent_price);
+  }
+
+  if (payload.availability_status !== undefined) {
+    fields.push(`availability_status = $${paramCount++}`);
+    values.push(payload.availability_status);
+  }
+
+  // যদি কোনো field update করার জন্য না পাঠানো হয়
+  if (fields.length === 0) {
+    throw new Error("No fields to update");
+  }
+
+  // id শেষে add করা
+  values.push(id);
+
+  const query = `
+    UPDATE vehicles 
+    SET ${fields.join(", ")} 
+    WHERE id = $${paramCount} 
+    RETURNING *
+  `;
+
+  const result = await pool.query(query, values);
 
   return result;
 };
